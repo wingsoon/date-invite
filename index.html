@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A little question for you…</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Caveat:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     EDIT ME → personalize everything in the CONFIG block down in
+     the <script> at the bottom (his name, your name, clues, etc.)
+     ============================================================ */
+  :root{
+    --bg1:#ffe3ec;
+    --bg2:#ffd6c4;
+    --bg3:#e7d6ff;
+    --bg4:#d6f1ff;
+    --card:#fffafc;
+    --ink:#4a2238;
+    --ink-soft:#9a7387;
+    --coral:#ff4d6d;
+    --coral-deep:#e0335a;
+    --gold:#f4a83d;
+    --mint:#3fb28f;
+    --shadow:0 18px 50px -18px rgba(224,51,90,.45);
+    --radius:28px;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Quicksand',system-ui,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3),var(--bg4));
+    background-size:400% 400%;
+    animation:drift 22s ease infinite;
+    min-height:100dvh;
+    display:flex;
+    justify-content:center;
+    overflow-x:hidden;
+    overflow-y:auto;
+    position:relative;
+  }
+  @keyframes drift{
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+  }
+
+  /* floating ambient hearts */
+  .ambient{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+  .ambient span{
+    position:absolute;bottom:-40px;font-size:22px;opacity:.5;
+    animation:rise linear infinite;
+    filter:saturate(1.2);
+  }
+  @keyframes rise{
+    0%{transform:translateY(0) rotate(0);opacity:0}
+    10%{opacity:.55}
+    100%{transform:translateY(-115dvh) rotate(360deg);opacity:0}
+  }
+
+  .stage{
+    position:relative;z-index:2;width:100%;max-width:560px;padding:24px;
+    margin:auto;
+    perspective:1200px;
+  }
+
+  .screen{display:none}
+  .screen.active{display:block;animation:pop .55s cubic-bezier(.2,.9,.3,1.3)}
+  @keyframes pop{
+    from{opacity:0;transform:translateY(22px) scale(.96)}
+    to{opacity:1;transform:none}
+  }
+
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:40px 34px;
+    text-align:center;
+    border:2px solid #ffe1ea;
+    position:relative;
+  }
+
+  .eyebrow{
+    font-family:'Caveat',cursive;
+    font-size:1.5rem;
+    color:var(--coral);
+    transform:rotate(-3deg);
+    display:inline-block;
+    margin-bottom:6px;
+  }
+
+  h1{
+    font-family:'Fredoka',sans-serif;
+    font-weight:700;
+    font-size:clamp(1.7rem,6vw,2.5rem);
+    line-height:1.1;
+    letter-spacing:-.5px;
+    margin-bottom:14px;
+  }
+  h1 .pink{color:var(--coral)}
+
+  p.lede{font-size:1.06rem;color:var(--ink-soft);font-weight:500;margin-bottom:26px;line-height:1.5}
+
+  .btn-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;align-items:center}
+
+  .btn{
+    font-family:'Fredoka',sans-serif;font-weight:600;font-size:1.05rem;
+    border:none;cursor:pointer;border-radius:999px;padding:15px 26px;
+    transition:transform .15s ease,box-shadow .2s ease,background .2s ease;
+    color:#fff;background:var(--coral);
+    box-shadow:0 10px 22px -8px var(--coral);
+  }
+  .btn:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 16px 30px -8px var(--coral-deep)}
+  .btn:active{transform:translateY(0) scale(.98)}
+  .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+  .btn.big{font-size:1.25rem;padding:18px 36px}
+
+  .btn.ghost{
+    background:#fff;color:var(--ink-soft);
+    box-shadow:0 8px 18px -10px rgba(154,115,135,.6);
+    border:2px solid #f1d9e2;
+  }
+
+  /* the runaway "nah" button */
+  .nah{
+    background:#efe4ea;color:#b79fac;box-shadow:none;white-space:nowrap;
+    transition:transform .2s cubic-bezier(.34,1.56,.64,1);
+  }
+  .nah.loose{position:fixed;z-index:50}
+
+  /* options grid (questionnaire) */
+  .options{display:grid;gap:14px;margin-top:8px}
+  .options.two{grid-template-columns:1fr 1fr}
+  @media(max-width:430px){.options.two{grid-template-columns:1fr}}
+
+  .opt{
+    font-family:'Quicksand',sans-serif;font-weight:600;font-size:1.02rem;
+    background:#fff;border:2px solid #ffdfe9;border-radius:20px;
+    padding:22px 16px;cursor:pointer;color:var(--ink);
+    transition:transform .14s ease,border-color .18s ease,box-shadow .2s ease,background .2s;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+  }
+  .opt .emoji{font-size:2rem;line-height:1}
+  .opt .sub{font-size:.82rem;color:var(--ink-soft);font-weight:500}
+  .opt:hover{transform:translateY(-4px);border-color:var(--coral);box-shadow:0 14px 26px -14px var(--coral)}
+  .opt:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+  .opt.chosen{background:var(--coral);color:#fff;border-color:var(--coral-deep)}
+  .opt.chosen .sub{color:#ffe2ea}
+
+  .progress{display:flex;gap:8px;justify-content:center;margin-bottom:22px}
+  .dot{width:11px;height:11px;border-radius:50%;background:#ffd0dd;transition:.3s}
+  .dot.on{background:var(--coral);transform:scale(1.25)}
+  .qcount{font-family:'Caveat',cursive;font-size:1.3rem;color:var(--ink-soft);margin-bottom:4px}
+
+  /* excitement slider */
+  .slider-wrap{margin:14px 0 4px}
+  input[type=range]{
+    -webkit-appearance:none;width:100%;height:14px;border-radius:999px;
+    background:linear-gradient(90deg,var(--coral),var(--gold));outline:none;cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:34px;height:34px;border-radius:50%;
+    background:#fff;border:4px solid var(--coral);box-shadow:0 6px 14px -4px var(--coral);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:30px;height:30px;border-radius:50%;background:#fff;border:4px solid var(--coral);
+  }
+  .excite-num{font-family:'Fredoka';font-size:3rem;color:var(--coral);font-weight:700;line-height:1}
+  .wiggle{animation:wig .4s}
+  @keyframes wig{0%,100%{transform:none}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+
+  /* celebration gif slot */
+  .gif-slot{
+    width:100%;max-width:300px;margin:0 auto 22px;border-radius:20px;overflow:hidden;
+    aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#ffd6e2,#ffe9c9);font-size:5.5rem;
+    border:3px dashed #ffb6cb;animation:bob 2.2s ease-in-out infinite;
+  }
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+  /* ===== boarding-pass / reservation reveal ===== */
+  .pass{
+    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+    overflow:hidden;border:2px solid #ffe1ea;text-align:left;
+  }
+  .pass-top{
+    background:linear-gradient(120deg,var(--coral),var(--gold));
+    color:#fff;padding:24px 26px;text-align:center;
+  }
+  .pass-top .stamp{
+    font-family:'Caveat';font-size:1.4rem;letter-spacing:1px;opacity:.95
+  }
+  .pass-top h2{font-family:'Fredoka';font-size:1.9rem;font-weight:700;margin-top:2px}
+  .pass-body{padding:24px 26px}
+  .row{display:flex;justify-content:space-between;gap:14px;margin-bottom:18px}
+  .field .label{font-size:.72rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+  .field .val{font-family:'Fredoka';font-size:1.25rem;font-weight:600;margin-top:2px}
+
+  .redacted{
+    background:#2a1622;color:#2a1622;border-radius:12px;padding:14px 16px;
+    position:relative;text-align:center;margin-top:6px;cursor:pointer;user-select:none;
+    box-shadow:inset 0 0 0 2px #ffffff22;
+  }
+  .redacted .secret{font-family:'Fredoka';font-weight:700;letter-spacing:3px;font-size:1.2rem}
+  .redacted .tag{
+    position:absolute;top:-12px;right:10px;background:var(--gold);color:#3a2410;
+    font-family:'Fredoka';font-weight:700;font-size:.7rem;letter-spacing:1px;
+    padding:4px 9px;border-radius:8px;transform:rotate(4deg);box-shadow:0 4px 10px -4px #00000055;
+  }
+  .redacted .peek{color:#ffd9e2;font-size:.78rem;margin-top:6px;font-weight:600;letter-spacing:.3px}
+
+  .countdown{display:flex;gap:8px;justify-content:center;margin:18px 0 6px}
+  .cd-box{background:#fff;border:2px solid #ffdfe9;border-radius:14px;padding:10px 4px;min-width:62px;text-align:center}
+  .cd-num{font-family:'Fredoka';font-weight:700;font-size:1.6rem;color:var(--coral);line-height:1}
+  .cd-lbl{font-size:.62rem;letter-spacing:1px;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin-top:3px}
+
+  .dossier{margin-top:18px;background:#fff6f9;border-radius:16px;padding:16px 18px;border:1px dashed #ffc2d3}
+  .dossier h3{font-family:'Fredoka';font-size:1rem;color:var(--coral-deep);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .clue{font-size:.92rem;color:var(--ink);font-weight:500;padding:5px 0;display:flex;gap:8px;align-items:flex-start}
+  .clue b{color:var(--coral)}
+
+  .recap{margin-top:16px;display:grid;gap:7px;text-align:left}
+  .recap .line{font-size:.92rem;color:var(--ink-soft);font-weight:500}
+  .recap .line b{color:var(--ink);font-weight:700}
+
+  .footer-note{font-family:'Caveat';font-size:1.35rem;color:var(--ink-soft);margin-top:18px;text-align:center;line-height:1.2}
+
+  .seeyou{
+    font-family:'Fredoka',sans-serif;font-weight:700;text-align:center;margin-top:14px;
+    font-size:1.15rem;color:var(--coral-deep);letter-spacing:.3px;
+    background:linear-gradient(120deg,#fff0f5,#fff6e9);border:1px dashed #ffc2d3;
+    border-radius:14px;padding:12px 14px;
+  }
+
+  /* ---------- mobile friendly ---------- */
+  @media (max-width:520px){
+    .stage{padding:14px}
+    .card{padding:30px 20px;border-radius:24px}
+    .pass-top{padding:20px 18px}
+    .pass-body{padding:20px 18px}
+    .row{margin-bottom:14px}
+    h1{font-size:clamp(1.5rem,7.5vw,2.1rem)}
+    p.lede{font-size:1rem;margin-bottom:22px}
+    .btn{font-size:1rem;padding:14px 22px}
+    .btn.big{font-size:1.12rem;padding:16px 28px}
+    .opt{padding:18px 12px;border-radius:18px}
+    .opt .emoji{font-size:1.7rem}
+    .gif-slot{max-width:220px;font-size:4.5rem}
+    .countdown{gap:6px}
+    .cd-box{min-width:0;flex:1;padding:9px 2px}
+    .cd-num{font-size:1.35rem}
+    .cd-lbl{font-size:.56rem}
+    .dossier{padding:14px 14px}
+    .clue{font-size:.88rem}
+    .seeyou{font-size:1.05rem}
+    .footer-note{font-size:1.2rem}
+  }
+  @media (max-width:360px){
+    .cd-lbl{letter-spacing:.3px}
+    h1{font-size:clamp(1.35rem,8vw,1.9rem)}
+  }
+
+  .mini{font-size:.82rem;color:var(--ink-soft);margin-top:14px;font-weight:500}
+  .copied{color:var(--mint);font-weight:700}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important}
+    body{animation:none}
+  }
+</style>
+</head>
+<body>
+<div class="ambient" id="ambient" aria-hidden="true"></div>
+
+<main class="stage">
+
+  <!-- 0 — THE QUESTION -->
+  <section class="screen active" id="s-ask">
+    <div class="card">
+      <span class="eyebrow">psst… hey you 👀</span>
+      <h1>Will you go on a <span class="pink">date</span> with me, <span id="name1">you</span>?</h1>
+      <p class="lede">Think carefully. Actually no — don't. Just say yes.</p>
+      <div class="btn-row">
+        <button class="btn big" id="yesBtn">hell yasssssssss</button>
+        <button class="btn nah" id="nahBtn">nah</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1 — CELEBRATION -->
+  <section class="screen" id="s-yay">
+    <div class="card">
+      <span class="eyebrow">called it 😏</span>
+      <div class="gif-slot" id="gifSlot" title="Swap me for your favourite meme GIF (see notes at the bottom of the file)">🥳</div>
+      <h1>I <span class="pink">knew</span> you couldn't resist me.</h1>
+      <p class="lede">Smart choice. You're going to have the best two days of your life. Now answer a few teeny questions for me…</p>
+      <div class="btn-row">
+        <button class="btn big" data-next="s-q1">okay, ask away →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 — Q1 movie -->
+  <section class="screen" id="s-q1">
+    <div class="card">
+      <div class="progress"><i class="dot on"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i></div>
+      <div class="qcount">question one</div>
+      <h1>Movie night… <span class="pink">but make it how?</span></h1>
+      <p class="lede">Be honest, there's no wrong answer (there is, but I'll allow both).</p>
+      <div class="options two">
+        <button class="opt" data-q="movie" data-val="Cinema 🍿" data-next="s-q2">
+          <span class="emoji">🍿</span>Big screen, cinema<span class="sub">popcorn & dramatic surround sound</span>
+        </button>
+        <button class="opt" data-q="movie" data-val="Movie in bed 🛏️" data-next="s-q2">
+          <span class="emoji">🛏️</span>Cozy, movie in bed<span class="sub">blankets, snacks, zero pants energy</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 — Q2 cuisine -->
+  <section class="screen" id="s-q2">
+    <div class="card">
+      <div class="progress"><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i></div>
+      <div class="qcount">question two</div>
+      <h1>What are we <span class="pink">feasting</span> on?</h1>
+      <p class="lede">This decides 60% of whether the date is a success. No pressure.</p>
+      <div class="options two">
+        <button class="opt" data-q="cuisine" data-val="Thai 🌶️" data-next="s-q3"><span class="emoji">🌶️</span>Thai<span class="sub">spicy, zingy, a little dangerous</span></button>
+        <button class="opt" data-q="cuisine" data-val="Western 🍝" data-next="s-q3"><span class="emoji">🍝</span>Western<span class="sub">comfort, carbs, candlelight</span></button>
+        <button class="opt" data-q="cuisine" data-val="Korean 🍲" data-next="s-q3"><span class="emoji">🍲</span>Korean<span class="sub">grill it, drama-binge it</span></button>
+        <button class="opt" data-q="cuisine" data-val="Mix of everything 🍱" data-next="s-q3"><span class="emoji">🍱</span>Mix of everything<span class="sub">indecisive & proud</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 — Q3 trip vibe -->
+  <section class="screen" id="s-q3">
+    <div class="card">
+      <div class="progress"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i></div>
+      <div class="qcount">question three</div>
+      <h1>Pick our <span class="pink">trip energy</span> 🎧</h1>
+      <p class="lede">Set the mood for the two days. Choose wisely (or chaotically).</p>
+      <div class="options two">
+        <button class="opt" data-q="vibe" data-val="Cozy & lazy 🧸" data-next="s-q4"><span class="emoji">🧸</span>Cozy &amp; lazy<span class="sub">do nothing, together</span></button>
+        <button class="opt" data-q="vibe" data-val="Adventurous 🧭" data-next="s-q4"><span class="emoji">🧭</span>Adventurous<span class="sub">say yes to everything</span></button>
+        <button class="opt" data-q="vibe" data-val="Spontaneous chaos 🎲" data-next="s-q4"><span class="emoji">🎲</span>Spontaneous chaos<span class="sub">no plan is the plan</span></button>
+        <button class="opt" data-q="vibe" data-val="All of the above ✨" data-next="s-q4"><span class="emoji">✨</span>All of the above<span class="sub">greedy. respect.</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 — Q4 snacks -->
+  <section class="screen" id="s-q4">
+    <div class="card">
+      <div class="progress"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i></div>
+      <div class="qcount">question four</div>
+      <h1>Snack run: <span class="pink">sweet or savoury?</span> 🛒</h1>
+      <p class="lede">I'm stocking up before you arrive. This is genuinely important data.</p>
+      <div class="options two">
+        <button class="opt" data-q="snacks" data-val="Sweet tooth 🍫" data-next="s-q5"><span class="emoji">🍫</span>Sweet tooth<span class="sub">chocolate, gummies, dessert first</span></button>
+        <button class="opt" data-q="snacks" data-val="Savoury squad 🍟" data-next="s-q5"><span class="emoji">🍟</span>Savoury squad<span class="sub">chips, crackers, salt me up</span></button>
+        <button class="opt" data-q="snacks" data-val="Both, obviously 🍿" data-next="s-q5"><span class="emoji">🍿</span>Both, obviously<span class="sub">correct answer, honestly</span></button>
+        <button class="opt" data-q="snacks" data-val="Surprise me 🎁" data-next="s-q5"><span class="emoji">🎁</span>Surprise me<span class="sub">trust fall, snack edition</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 — Q5 excitement -->
+  <section class="screen" id="s-q5">
+    <div class="card">
+      <div class="progress"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i></div>
+      <div class="qcount">last one, pinky promise</div>
+      <h1>Be honest… how <span class="pink">excited</span> are you? 😍</h1>
+      <p class="lede">Scale of 1 to 10. Warning: this slider has standards.</p>
+      <div class="excite-num" id="exciteNum">10</div>
+      <div class="slider-wrap">
+        <input type="range" id="excite" min="0" max="10" value="10" aria-label="Excitement level" />
+      </div>
+      <p class="mini" id="exciteMsg">…that's the spirit. 💕</p>
+      <div class="btn-row" style="margin-top:18px">
+        <button class="btn big" id="finishBtn">lock it in 🔒</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 — RESERVATION / REVEAL -->
+  <section class="screen" id="s-done">
+    <div class="pass">
+      <div class="pass-top">
+        <div class="stamp">✦ reservation confirmed ✦</div>
+        <h2>It's a date. 💌</h2>
+      </div>
+      <div class="pass-body">
+        <div class="row">
+          <div class="field"><div class="label">Guest of honour</div><div class="val" id="name2">You</div></div>
+          <div class="field" style="text-align:right"><div class="label">Hosted by</div><div class="val" id="host">Me</div></div>
+        </div>
+        <div class="row">
+          <div class="field"><div class="label">Dates</div><div class="val" id="dates">July 4 &amp; 5</div></div>
+          <div class="field" style="text-align:right"><div class="label">Nights</div><div class="val">2 · just us</div></div>
+        </div>
+
+        <div class="field"><div class="label">Destination</div></div>
+        <div class="redacted" id="redacted" role="button" tabindex="0" aria-label="Secret location, locked">
+          <span class="tag">TOP SECRET</span>
+          <div class="secret">█████████████</div>
+          <div class="peek" id="peekTxt">tap to peek 👀</div>
+        </div>
+
+        <div class="countdown" id="countdown" aria-label="Time until the location is revealed">
+          <div class="cd-box"><div class="cd-num" id="cd-d">--</div><div class="cd-lbl">days</div></div>
+          <div class="cd-box"><div class="cd-num" id="cd-h">--</div><div class="cd-lbl">hrs</div></div>
+          <div class="cd-box"><div class="cd-num" id="cd-m">--</div><div class="cd-lbl">min</div></div>
+          <div class="cd-box"><div class="cd-num" id="cd-s">--</div><div class="cd-lbl">sec</div></div>
+        </div>
+        <p class="mini" style="text-align:center">until the location declassifies itself 🔓</p>
+
+        <div class="dossier">
+          <h3>🕵️ Clue dossier</h3>
+          <div id="clueList"></div>
+        </div>
+
+        <div class="recap" id="recap"></div>
+
+        <div class="btn-row" style="margin-top:20px">
+          <button class="btn" id="copyBtn">📋 copy my answers &amp; send to him</button>
+        </div>
+        <p class="mini copied" id="copyMsg" style="display:none;text-align:center">copied! now paste it to me 💌</p>
+
+        <p class="footer-note">pack light. bring yourself.<br/>everything else is handled. 😘</p>
+        <p class="seeyou" id="seeyou">✨ see you July 4th, Ivan ✨</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ============================================================
+   ★ CONFIG — change these to personalize. That's it. ★
+   ============================================================ */
+const CONFIG = {
+  hisName:  "Ivan",               // his name
+  yourName: "Jaden",              // your name
+  dates:    "July 4 & 5",          // shown on the reservation
+  revealAt: "2026-07-04T00:00:00", // countdown target (his reveal day)
+  clues: [                         // 3 teaser clues
+    "You already know the neighbourhood (KLCC 👋) — and the name? It means 'home'. 🏠",
+    "Rooftop pool, skyline views, and a bed you genuinely won't want to leave. 🌃",
+    "Fancy enough to dress up, comfy enough to live in the robe all day. 🛁"
+  ]
+};
+
+/* ---------- wire up config ---------- */
+document.getElementById('name1').textContent = CONFIG.hisName;
+document.getElementById('name2').textContent = CONFIG.hisName;
+document.getElementById('host').textContent  = CONFIG.yourName;
+document.getElementById('dates').textContent = CONFIG.dates;
+document.getElementById('seeyou').textContent = '✨ see you July 4th, '+CONFIG.hisName+' ✨';
+const clueList = document.getElementById('clueList');
+CONFIG.clues.forEach((c,i)=>{
+  const d=document.createElement('div');
+  d.className='clue';
+  d.innerHTML='<b>'+(i+1)+'.</b><span>'+c+'</span>';
+  clueList.appendChild(d);
+});
+
+/* ---------- ambient hearts ---------- */
+const ambient=document.getElementById('ambient');
+const hearts=['💗','💕','💖','✨','🩷','💘'];
+for(let i=0;i<16;i++){
+  const s=document.createElement('span');
+  s.textContent=hearts[i%hearts.length];
+  s.style.left=Math.random()*100+'%';
+  s.style.fontSize=(14+Math.random()*22)+'px';
+  s.style.animationDuration=(9+Math.random()*12)+'s';
+  s.style.animationDelay=(-Math.random()*15)+'s';
+  ambient.appendChild(s);
+}
+
+/* ---------- screen navigation ---------- */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id);
+  el.classList.add('active');
+  window.scrollTo({top:0,behavior:'auto'});
+}
+document.querySelectorAll('[data-next]').forEach(b=>{
+  if(b.classList.contains('opt')) return; // handled below
+  b.addEventListener('click',()=>show(b.dataset.next));
+});
+
+/* ---------- answers store ---------- */
+const answers={};
+document.querySelectorAll('.opt').forEach(opt=>{
+  opt.addEventListener('click',()=>{
+    // mark chosen within the same question group
+    opt.parentElement.querySelectorAll('.opt').forEach(o=>o.classList.remove('chosen'));
+    opt.classList.add('chosen');
+    answers[opt.dataset.q]=opt.dataset.val;
+    setTimeout(()=>show(opt.dataset.next),260);
+  });
+});
+
+/* ---------- the runaway "nah" button ---------- */
+const nah=document.getElementById('nahBtn');
+const taunts=['nah','you sure? 🤨','nope','catch me 🏃','try again 😘','not today','😏','really?','keep dreaming','no chance 💅','too slow!'];
+let lastTaunt=0; // index 0 = 'nah', already showing
+function nextTaunt(){
+  let i;
+  do{ i=Math.floor(Math.random()*taunts.length); } while(i===lastTaunt && taunts.length>1);
+  lastTaunt=i;
+  return taunts[i];
+}
+function flee(){
+  nah.textContent=nextTaunt();           // change the wording first…
+  nah.classList.add('loose');
+  const pad=12;
+  const vw=(window.visualViewport&&window.visualViewport.width)||document.documentElement.clientWidth;
+  const vh=(window.visualViewport&&window.visualViewport.height)||document.documentElement.clientHeight;
+  const w=nah.offsetWidth, h=nah.offsetHeight;   // …then measure after reflow
+  const maxX=Math.max(pad, vw - w - pad);
+  const maxY=Math.max(pad, vh - h - pad);
+  let x=pad+Math.random()*(maxX-pad);
+  let y=pad+Math.random()*(maxY-pad);
+  x=Math.min(Math.max(x,pad),maxX);              // hard clamp inside viewport
+  y=Math.min(Math.max(y,pad),maxY);
+  nah.style.left=x+'px';
+  nah.style.top=y+'px';
+}
+function keepInView(){                            // if the window changes, drag it back in
+  if(!nah.classList.contains('loose')) return;
+  const pad=12;
+  const vw=(window.visualViewport&&window.visualViewport.width)||document.documentElement.clientWidth;
+  const vh=(window.visualViewport&&window.visualViewport.height)||document.documentElement.clientHeight;
+  const w=nah.offsetWidth, h=nah.offsetHeight;
+  let x=parseFloat(nah.style.left)||0, y=parseFloat(nah.style.top)||0;
+  x=Math.min(Math.max(x,pad),Math.max(pad,vw-w-pad));
+  y=Math.min(Math.max(y,pad),Math.max(pad,vh-h-pad));
+  nah.style.left=x+'px'; nah.style.top=y+'px';
+}
+window.addEventListener('resize',keepInView);
+nah.addEventListener('mouseenter',flee);
+nah.addEventListener('mousedown',e=>{e.preventDefault();flee();});
+nah.addEventListener('touchstart',e=>{e.preventDefault();flee();},{passive:false});
+nah.addEventListener('focus',flee);
+nah.addEventListener('click',e=>{e.preventDefault();flee();});
+
+/* ---------- YES → confetti + celebrate ---------- */
+const yesBtn=document.getElementById('yesBtn');
+yesBtn.addEventListener('click',()=>{
+  burst();
+  setTimeout(()=>show('s-yay'),520);
+});
+function burst(){
+  const emojis=['💗','💖','🎉','✨','💕','🩷','🥳','💘'];
+  for(let i=0;i<70;i++){
+    const e=document.createElement('span');
+    e.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    e.style.cssText='position:fixed;z-index:60;pointer-events:none;left:50%;top:55%;font-size:'+(16+Math.random()*22)+'px';
+    document.body.appendChild(e);
+    const ang=Math.random()*Math.PI*2, dist=120+Math.random()*320;
+    const dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist-120;
+    e.animate(
+      [{transform:'translate(-50%,-50%) scale(.3)',opacity:1},
+       {transform:`translate(${dx}px,${dy}px) scale(1.2) rotate(${Math.random()*540-270}deg)`,opacity:0}],
+      {duration:1100+Math.random()*700,easing:'cubic-bezier(.2,.7,.3,1)'}
+    ).onfinish=()=>e.remove();
+  }
+}
+
+/* ---------- excitement slider (has standards) ---------- */
+const excite=document.getElementById('excite');
+const exciteNum=document.getElementById('exciteNum');
+const exciteMsg=document.getElementById('exciteMsg');
+const msgs={
+  10:'…that\'s the spirit. 💕',
+  9:'okay okay, 9 is acceptable. barely. 😌'
+};
+excite.addEventListener('input',()=>{
+  let v=parseInt(excite.value,10);
+  if(v<9){               // the slider refuses to be sad
+    v=Math.random()<.5?9:10;
+    excite.value=v;
+    exciteNum.classList.remove('wiggle');void exciteNum.offsetWidth;
+    exciteNum.classList.add('wiggle');
+    exciteMsg.textContent='nice try. the slider only goes up from here. ⬆️😘';
+  } else {
+    exciteMsg.textContent=msgs[v]||msgs[10];
+  }
+  exciteNum.textContent=v;
+  answers.excitement=v+'/10';
+});
+answers.excitement='10/10';
+
+document.getElementById('finishBtn').addEventListener('click',()=>{
+  buildRecap();
+  show('s-done');
+  burst();
+});
+
+/* ---------- recap on the reservation ---------- */
+function buildRecap(){
+  const r=document.getElementById('recap');
+  const map=[
+    ['🎬 Movie',answers.movie],
+    ['🍽️ Cuisine',answers.cuisine],
+    ['🎧 Trip vibe',answers.vibe],
+    ['🍿 Snacks',answers.snacks],
+    ['😍 Excitement',answers.excitement]
+  ];
+  r.innerHTML='<div class="line" style="font-weight:700;color:var(--ink)">Your picks, noted &amp; locked in:</div>';
+  map.forEach(([k,v])=>{
+    if(!v) return;
+    const d=document.createElement('div');
+    d.className='line';
+    d.innerHTML=k+': <b>'+v+'</b>';
+    r.appendChild(d);
+  });
+}
+
+/* ---------- redacted location teasing ---------- */
+const redacted=document.getElementById('redacted');
+const peekTxt=document.getElementById('peekTxt');
+const peeks=['nice try 😘','nope, not yet 🔒','patience, cutie 💗','reveal day only 🤫','i admire the effort 😏'];
+let p=0;
+function tease(){
+  peekTxt.textContent=peeks[p++ % peeks.length];
+  redacted.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:300});
+}
+redacted.addEventListener('click',tease);
+redacted.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tease();}});
+
+/* ---------- countdown ---------- */
+const target=new Date(CONFIG.revealAt).getTime();
+function tick(){
+  const now=Date.now();
+  let diff=Math.max(0,target-now);
+  const d=Math.floor(diff/86400000); diff-=d*86400000;
+  const h=Math.floor(diff/3600000);  diff-=h*3600000;
+  const m=Math.floor(diff/60000);    diff-=m*60000;
+  const s=Math.floor(diff/1000);
+  const pad=n=>String(n).padStart(2,'0');
+  document.getElementById('cd-d').textContent=d;
+  document.getElementById('cd-h').textContent=pad(h);
+  document.getElementById('cd-m').textContent=pad(m);
+  document.getElementById('cd-s').textContent=pad(s);
+  if(target-now<=0){
+    document.getElementById('peekTxt').textContent='🔓 it\'s reveal day! ask me now 😍';
+  }
+}
+tick(); setInterval(tick,1000);
+
+/* ---------- copy answers to send back ---------- */
+document.getElementById('copyBtn').addEventListener('click',async()=>{
+  const txt=
+`Hi ${CONFIG.yourName} 💌 — YES I'm in! Here are my picks for July 4 & 5:
+🎬 Movie: ${answers.movie||'—'}
+🍽️ Cuisine: ${answers.cuisine||'—'}
+🎧 Trip vibe: ${answers.vibe||'—'}
+🍿 Snacks: ${answers.snacks||'—'}
+😍 Excitement: ${answers.excitement||'—'}
+(now tell me where we're going 😏)`;
+  try{
+    await navigator.clipboard.writeText(txt);
+  }catch(e){
+    const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');}catch(_){}
+    ta.remove();
+  }
+  document.getElementById('copyMsg').style.display='block';
+});
+</script>
+
+<!-- ============================================================
+  💡 PERSONALIZE / NOTES
+  • Names, dates, countdown date & clues: edit the CONFIG block above.
+  • Want a real meme GIF on the celebration screen instead of the 🥳?
+    Find the <div class="gif-slot" id="gifSlot">🥳</div> and replace it with:
+      <img class="gif-slot" src="YOUR_GIF_URL_OR_FILE.gif" alt="yay" />
+    (a hosted .gif URL, or put the file next to this html and use its name)
+  • The "nah" button can never be clicked — it runs on hover, tap, and focus.
+  • The excitement slider refuses to go below 9. On purpose. 😌
+  • To share: just send him this single .html file, or host it free on
+    Netlify Drop / GitHub Pages / Vercel and send the link.
+============================================================ -->
+</body>
+</html>
