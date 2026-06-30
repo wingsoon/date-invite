@@ -277,6 +277,13 @@
 
   .mini{font-size:.82rem;color:var(--ink-soft);margin-top:14px;font-weight:500}
 
+  .sendstatus{
+    margin-top:18px;text-align:center;font-family:'Fredoka',sans-serif;font-weight:600;
+    font-size:1rem;color:var(--coral-deep);background:#fff0f5;border:1px dashed #ffc2d3;
+    border-radius:14px;padding:12px 14px;line-height:1.35;
+  }
+  .sendstatus.ok{color:#1f8f6e;background:#eafff7;border-color:#9be7cf}
+
   .terms{display:grid;gap:10px;text-align:left;margin:8px 0 4px}
   .term{
     display:flex;gap:12px;align-items:flex-start;
@@ -454,10 +461,11 @@
 
         <div class="recap" id="recap"></div>
 
-        <div class="btn-row" style="margin-top:20px">
-          <button class="btn" id="copyBtn">📋 copy my answers &amp; send to Jaden</button>
+        <div class="sendstatus" id="sendStatus">💌 sending your answers to Jaden…</div>
+        <div class="btn-row" id="fallbackRow" style="margin-top:14px;display:none">
+          <button class="btn" id="copyBtn">📋 copy my answers &amp; text Jaden</button>
         </div>
-        <p class="mini copied" id="copyMsg" style="display:none;text-align:center">copied! now paste it to me 💌</p>
+        <p class="mini copied" id="copyMsg" style="display:none;text-align:center">copied! now paste it to Jaden 💌</p>
 
         <p class="footer-note">pack light. bring yourself.<br/>everything else is handled. 😘</p>
         <p class="seeyou" id="seeyou">✨ see you July 4th, Ivan ✨</p>
@@ -476,8 +484,10 @@ const CONFIG = {
   yourName: "Jaden",              // your name
   dates:    "July 4 & 5",          // shown on the reservation
   revealAt: "2026-07-04T00:00:00", // countdown target (his reveal day)
+  email:    "yongwingsoon@gmail.com",                  // where answers are sent (for your reference)
+  web3formsKey: "52405aca-e743-4b4b-8fae-4a2d1c017ab1", // Web3Forms access key → delivers to the email above
   clues: [                         // 3 teaser clues
-    "Yes, it's the beloved KLCC — now stop trying to guess the exact spot. 😌🏙️",
+    "Yes, it's your beloved KLCC — now stop trying to guess the exact spot. 😌🏙️",
     "Rooftop pool, skyline views, and a bed you genuinely won't want to leave. 🌃",
     "Fancy enough to dress up, comfy enough to live in the robe all day. 🛁"
   ]
@@ -489,7 +499,7 @@ document.getElementById('name2').textContent = CONFIG.hisName;
 document.getElementById('host').textContent  = CONFIG.yourName;
 document.getElementById('dates').textContent = CONFIG.dates;
 document.getElementById('seeyou').textContent = '✨ see you July 4th, '+CONFIG.hisName+' ✨';
-document.getElementById('copyBtn').textContent = '📋 copy my answers & send to '+CONFIG.yourName;
+document.getElementById('copyBtn').textContent = '📋 copy my answers & text '+CONFIG.yourName;
 const clueList = document.getElementById('clueList');
 CONFIG.clues.forEach((c,i)=>{
   const d=document.createElement('div');
@@ -611,12 +621,53 @@ function burst(){
   }
 }
 
-/* ---------- finish → reservation ---------- */
+/* ---------- finish → email answers + reservation ---------- */
+let submitted=false;
 document.getElementById('finishBtn').addEventListener('click',()=>{
+  if(submitted) return;          // guard against double submit
+  submitted=true;
   buildRecap();
   show('s-done');
   burst();
+  sendAnswers();
 });
+
+async function sendAnswers(){
+  const status=document.getElementById('sendStatus');
+  const fallbackRow=document.getElementById('fallbackRow');
+  if(!CONFIG.web3formsKey){               // no key set → just show the manual option
+    status.style.display='none';
+    fallbackRow.style.display='flex';
+    return;
+  }
+  try{
+    const res=await fetch('https://api.web3forms.com/submit',{
+      method:'POST',
+      headers:{'Content-Type':'application/json',Accept:'application/json'},
+      body:JSON.stringify({
+        access_key:CONFIG.web3formsKey,
+        subject:CONFIG.hisName+' said YES 💌 — staycation prefs',
+        from_name:'Date Invite',
+        Guest:CONFIG.hisName,
+        '🎬 Movie':answers.movie||'—',
+        '🍽️ Cuisine':answers.cuisine||'—',
+        '🎧 Trip vibe':answers.vibe||'—',
+        '🍿 Snacks':answers.snacks||'—',
+        Note:CONFIG.hisName+' agreed to the house rules and is in for '+CONFIG.dates+'! 🎉'
+      })
+    });
+    const data=await res.json();
+    if(data.success){
+      status.classList.add('ok');
+      status.innerHTML='✅ done! your answers are on their way to '+CONFIG.yourName+'. 💌';
+    }else{
+      throw new Error(data.message||'send failed');
+    }
+  }catch(err){
+    status.innerHTML='hmm, auto-send didn\'t go through — no stress, tap below 👇';
+    fallbackRow.style.display='flex';
+  }
+}
 
 /* ---------- recap on the reservation ---------- */
 function buildRecap(){
