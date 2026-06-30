@@ -50,16 +50,16 @@
   }
 
   /* floating ambient hearts */
-  .ambient{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:3}
+  .ambient{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:1}
   .ambient span{
-    position:absolute;bottom:-40px;font-size:22px;opacity:.35;
+    position:absolute;bottom:-40px;font-size:22px;opacity:.6;
     animation:rise linear infinite;
-    filter:saturate(1.2);
+    filter:saturate(1.2) drop-shadow(0 1px 5px rgba(255,255,255,.65));
   }
   @keyframes rise{
     0%{transform:translateY(0) rotate(0);opacity:0}
-    10%{opacity:.4}
-    100%{transform:translateY(-115dvh) rotate(360deg);opacity:0}
+    10%{opacity:.6}
+    100%{transform:translateY(-115vh) rotate(360deg);opacity:0}
   }
 
   .stage{
@@ -92,6 +92,17 @@
     display:inline-block;
     margin-bottom:6px;
   }
+
+  .backbtn{
+    position:absolute;top:16px;left:16px;
+    font-family:'Quicksand',sans-serif;font-weight:600;font-size:.85rem;
+    background:#fff;color:var(--ink-soft);border:2px solid #f1d9e2;
+    border-radius:999px;padding:7px 14px;cursor:pointer;line-height:1;
+    transition:transform .14s ease,border-color .18s ease,color .18s ease;
+  }
+  .backbtn:hover{transform:translateX(-2px);border-color:var(--coral);color:var(--coral)}
+  .backbtn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+  .card{padding-top:46px}
 
   h1{
     font-family:'Fredoka',sans-serif;
@@ -239,7 +250,7 @@
   /* ---------- mobile friendly ---------- */
   @media (max-width:520px){
     .stage{padding:14px}
-    .card{padding:30px 20px;border-radius:24px}
+    .card{padding:44px 18px 28px;border-radius:24px}
     .pass-top{padding:20px 18px}
     .pass-body{padding:20px 18px}
     .row{margin-bottom:14px}
@@ -315,10 +326,11 @@
   <!-- 2 — Q1 movie -->
   <section class="screen" id="s-q1">
     <div class="card">
+      <button class="backbtn" aria-label="Go back">← back</button>
       <div class="progress"><i class="dot on"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i></div>
       <div class="qcount">question one</div>
       <h1>Movie night… <span class="pink">but make it how?</span></h1>
-      <p class="lede">Be honest, there's no wrong answer (there is, but I'll allow both).</p>
+      <p class="lede">Picture our first movie together — what's the vibe?</p>
       <div class="options two">
         <button class="opt" data-q="movie" data-val="Cinema 🍿" data-next="s-q2">
           <span class="emoji">🍿</span>Big screen, cinema<span class="sub">popcorn & dramatic surround sound</span>
@@ -333,10 +345,11 @@
   <!-- 3 — Q2 cuisine -->
   <section class="screen" id="s-q2">
     <div class="card">
+      <button class="backbtn" aria-label="Go back">← back</button>
       <div class="progress"><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i></div>
       <div class="qcount">question two</div>
       <h1>What are we <span class="pink">feasting</span> on?</h1>
-      <p class="lede">This decides 60% of whether the date is a success. No pressure.</p>
+      <p class="lede">Tell me what you're craving and I'll sort the rest.</p>
       <div class="options two">
         <button class="opt" data-q="cuisine" data-val="Thai 🌶️" data-next="s-q3"><span class="emoji">🌶️</span>Thai<span class="sub">spicy, zingy, a little dangerous</span></button>
         <button class="opt" data-q="cuisine" data-val="Western 🍝" data-next="s-q3"><span class="emoji">🍝</span>Western<span class="sub">comfort, carbs, candlelight</span></button>
@@ -349,10 +362,11 @@
   <!-- 4 — Q3 trip vibe -->
   <section class="screen" id="s-q3">
     <div class="card">
+      <button class="backbtn" aria-label="Go back">← back</button>
       <div class="progress"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i></div>
       <div class="qcount">question three</div>
       <h1>Pick our <span class="pink">trip energy</span> 🎧</h1>
-      <p class="lede">Set the mood for the two days. Choose wisely (or chaotically).</p>
+      <p class="lede">How do you want these two days to feel?</p>
       <div class="options two">
         <button class="opt" data-q="vibe" data-val="Cozy & lazy 🧸" data-next="s-q4"><span class="emoji">🧸</span>Cozy &amp; lazy<span class="sub">do nothing, together</span></button>
         <button class="opt" data-q="vibe" data-val="Adventurous 🧭" data-next="s-q4"><span class="emoji">🧭</span>Adventurous<span class="sub">say yes to everything</span></button>
@@ -365,10 +379,11 @@
   <!-- 5 — Q4 snacks -->
   <section class="screen" id="s-q4">
     <div class="card">
+      <button class="backbtn" aria-label="Go back">← back</button>
       <div class="progress"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i></div>
       <div class="qcount">question four</div>
       <h1>Snack run: <span class="pink">sweet or savoury?</span> 🛒</h1>
-      <p class="lede">I'm stocking up before you arrive. This is genuinely important data.</p>
+      <p class="lede">Just so I can plan our snack stash properly.</p>
       <div class="options two">
         <button class="opt" data-q="snacks" data-val="Sweet tooth 🍫" data-next="s-q5"><span class="emoji">🍫</span>Sweet tooth<span class="sub">chocolate, gummies, dessert first</span></button>
         <button class="opt" data-q="snacks" data-val="Savoury squad 🍟" data-next="s-q5"><span class="emoji">🍟</span>Savoury squad<span class="sub">chips, crackers, salt me up</span></button>
@@ -381,16 +396,17 @@
   <!-- 6 — playful fine print (statement, not a question) -->
   <section class="screen" id="s-q5">
     <div class="card">
+      <button class="backbtn" aria-label="Go back">← back</button>
       <div class="progress"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i></div>
       <div class="qcount">the fine print 📜</div>
       <h1>Before I confirm this… <span class="pink">house rules.</span></h1>
       <p class="lede">By tapping the button, you (Ivan) <i>legally*</i> agree to the following:</p>
       <div class="terms">
-        <div class="term"><span>📵</span>Phones on silent. Eyes on me.</div>
         <div class="term"><span>😎</span>You are contractually obligated to have fun.</div>
-        <div class="term"><span>🍟</span>Snack theft is encouraged and, frankly, expected.</div>
-        <div class="term"><span>🙅</span>Complaints may be filed with: nobody.</div>
-        <div class="term"><span>💘</span>Catching feelings is a known and accepted side effect.</div>
+        <div class="term"><span>🤗</span>Cuddling is mandatory. Non-negotiable.</div>
+        <div class="term"><span>📸</span>At least one slightly ridiculous selfie is mandatory.</div>
+        <div class="term"><span>🤝</span>Hand-holding privileges are granted to the host on arrival.</div>
+        <div class="term"><span>💬</span>2am deep talks (and terrible jokes) are pre-approved.</div>
       </div>
       <p class="mini">*not legally. but morally, yes.</p>
       <div class="btn-row" style="margin-top:18px">
@@ -413,10 +429,10 @@
         </div>
         <div class="row">
           <div class="field"><div class="label">Dates</div><div class="val" id="dates">July 4 &amp; 5</div></div>
-          <div class="field" style="text-align:right"><div class="label">Nights</div><div class="val">2 · just us</div></div>
+          <div class="field" style="text-align:right"><div class="label">Nights</div><div class="val">1 · Just us</div></div>
         </div>
 
-        <div class="field"><div class="label">Destination</div></div>
+        <div class="field"><div class="label">Staycation Destination</div></div>
         <div class="redacted" id="redacted" role="button" tabindex="0" aria-label="Secret location, locked">
           <span class="tag">TOP SECRET</span>
           <div class="secret">█████████████</div>
@@ -439,7 +455,7 @@
         <div class="recap" id="recap"></div>
 
         <div class="btn-row" style="margin-top:20px">
-          <button class="btn" id="copyBtn">📋 copy my answers &amp; send to him</button>
+          <button class="btn" id="copyBtn">📋 copy my answers &amp; send to Jaden</button>
         </div>
         <p class="mini copied" id="copyMsg" style="display:none;text-align:center">copied! now paste it to me 💌</p>
 
@@ -461,7 +477,7 @@ const CONFIG = {
   dates:    "July 4 & 5",          // shown on the reservation
   revealAt: "2026-07-04T00:00:00", // countdown target (his reveal day)
   clues: [                         // 3 teaser clues
-    "Yes, it's your beloved KLCC — now stop trying to guess the exact spot. 😌🏙️",
+    "Yes, it's the beloved KLCC — now stop trying to guess the exact spot. 😌🏙️",
     "Rooftop pool, skyline views, and a bed you genuinely won't want to leave. 🌃",
     "Fancy enough to dress up, comfy enough to live in the robe all day. 🛁"
   ]
@@ -473,6 +489,7 @@ document.getElementById('name2').textContent = CONFIG.hisName;
 document.getElementById('host').textContent  = CONFIG.yourName;
 document.getElementById('dates').textContent = CONFIG.dates;
 document.getElementById('seeyou').textContent = '✨ see you July 4th, '+CONFIG.hisName+' ✨';
+document.getElementById('copyBtn').textContent = '📋 copy my answers & send to '+CONFIG.yourName;
 const clueList = document.getElementById('clueList');
 CONFIG.clues.forEach((c,i)=>{
   const d=document.createElement('div');
@@ -494,13 +511,20 @@ for(let i=0;i<16;i++){
   ambient.appendChild(s);
 }
 
-/* ---------- screen navigation ---------- */
-function show(id){
+/* ---------- screen navigation (with history) ---------- */
+let current='s-ask';
+const hist=[];
+function show(id, isBack){
+  if(!isBack && id!==current) hist.push(current);   // remember where we came from
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  const el=document.getElementById(id);
-  el.classList.add('active');
+  document.getElementById(id).classList.add('active');
+  current=id;
   window.scrollTo({top:0,behavior:'auto'});
 }
+function goBack(){
+  if(hist.length){ show(hist.pop(), true); }
+}
+document.querySelectorAll('.backbtn').forEach(b=>b.addEventListener('click',goBack));
 document.querySelectorAll('[data-next]').forEach(b=>{
   if(b.classList.contains('opt')) return; // handled below
   b.addEventListener('click',()=>show(b.dataset.next));
@@ -566,6 +590,7 @@ nah.addEventListener('click',e=>{e.preventDefault();flee();});
 /* ---------- YES → confetti + celebrate ---------- */
 const yesBtn=document.getElementById('yesBtn');
 yesBtn.addEventListener('click',()=>{
+  nah.style.display='none';     // banish the nah button for good
   burst();
   setTimeout(()=>show('s-yay'),520);
 });
