@@ -50,22 +50,21 @@
   }
 
   /* floating ambient hearts */
-  .ambient{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+  .ambient{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:3}
   .ambient span{
-    position:absolute;bottom:-40px;font-size:22px;opacity:.5;
+    position:absolute;bottom:-40px;font-size:22px;opacity:.35;
     animation:rise linear infinite;
     filter:saturate(1.2);
   }
   @keyframes rise{
     0%{transform:translateY(0) rotate(0);opacity:0}
-    10%{opacity:.55}
+    10%{opacity:.4}
     100%{transform:translateY(-115dvh) rotate(360deg);opacity:0}
   }
 
   .stage{
     position:relative;z-index:2;width:100%;max-width:560px;padding:24px;
     margin:auto;
-    perspective:1200px;
   }
 
   .screen{display:none}
@@ -266,6 +265,14 @@
   }
 
   .mini{font-size:.82rem;color:var(--ink-soft);margin-top:14px;font-weight:500}
+
+  .terms{display:grid;gap:10px;text-align:left;margin:8px 0 4px}
+  .term{
+    display:flex;gap:12px;align-items:flex-start;
+    background:#fff6f9;border:1px dashed #ffc2d3;border-radius:14px;
+    padding:12px 14px;font-weight:600;font-size:.96rem;color:var(--ink);line-height:1.35;
+  }
+  .term span{font-size:1.25rem;line-height:1.2;flex-shrink:0}
   .copied{color:var(--mint);font-weight:700}
 
   @media (prefers-reduced-motion: reduce){
@@ -371,20 +378,23 @@
     </div>
   </section>
 
-  <!-- 6 — Q5 excitement -->
+  <!-- 6 — playful fine print (statement, not a question) -->
   <section class="screen" id="s-q5">
     <div class="card">
       <div class="progress"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i></div>
-      <div class="qcount">last one, pinky promise</div>
-      <h1>Be honest… how <span class="pink">excited</span> are you? 😍</h1>
-      <p class="lede">Scale of 1 to 10. Warning: this slider has standards.</p>
-      <div class="excite-num" id="exciteNum">10</div>
-      <div class="slider-wrap">
-        <input type="range" id="excite" min="0" max="10" value="10" aria-label="Excitement level" />
+      <div class="qcount">the fine print 📜</div>
+      <h1>Before I confirm this… <span class="pink">house rules.</span></h1>
+      <p class="lede">By tapping the button, you (Ivan) <i>legally*</i> agree to the following:</p>
+      <div class="terms">
+        <div class="term"><span>📵</span>Phones on silent. Eyes on me.</div>
+        <div class="term"><span>😎</span>You are contractually obligated to have fun.</div>
+        <div class="term"><span>🍟</span>Snack theft is encouraged and, frankly, expected.</div>
+        <div class="term"><span>🙅</span>Complaints may be filed with: nobody.</div>
+        <div class="term"><span>💘</span>Catching feelings is a known and accepted side effect.</div>
       </div>
-      <p class="mini" id="exciteMsg">…that's the spirit. 💕</p>
+      <p class="mini">*not legally. but morally, yes.</p>
       <div class="btn-row" style="margin-top:18px">
-        <button class="btn big" id="finishBtn">lock it in 🔒</button>
+        <button class="btn big" id="finishBtn">I solemnly agree 🤝</button>
       </div>
     </div>
   </section>
@@ -451,7 +461,7 @@ const CONFIG = {
   dates:    "July 4 & 5",          // shown on the reservation
   revealAt: "2026-07-04T00:00:00", // countdown target (his reveal day)
   clues: [                         // 3 teaser clues
-    "You already know the neighbourhood (KLCC 👋) — and the name? It means 'home'. 🏠",
+    "Yes, it's your beloved KLCC — now stop trying to guess the exact spot. 😌🏙️",
     "Rooftop pool, skyline views, and a bed you genuinely won't want to leave. 🌃",
     "Fancy enough to dress up, comfy enough to live in the robe all day. 🛁"
   ]
@@ -520,6 +530,7 @@ function nextTaunt(){
 }
 function flee(){
   nah.textContent=nextTaunt();           // change the wording first…
+  if(nah.parentElement!==document.body) document.body.appendChild(nah); // anchor to the screen
   nah.classList.add('loose');
   const pad=12;
   const vw=(window.visualViewport&&window.visualViewport.width)||document.documentElement.clientWidth;
@@ -575,30 +586,7 @@ function burst(){
   }
 }
 
-/* ---------- excitement slider (has standards) ---------- */
-const excite=document.getElementById('excite');
-const exciteNum=document.getElementById('exciteNum');
-const exciteMsg=document.getElementById('exciteMsg');
-const msgs={
-  10:'…that\'s the spirit. 💕',
-  9:'okay okay, 9 is acceptable. barely. 😌'
-};
-excite.addEventListener('input',()=>{
-  let v=parseInt(excite.value,10);
-  if(v<9){               // the slider refuses to be sad
-    v=Math.random()<.5?9:10;
-    excite.value=v;
-    exciteNum.classList.remove('wiggle');void exciteNum.offsetWidth;
-    exciteNum.classList.add('wiggle');
-    exciteMsg.textContent='nice try. the slider only goes up from here. ⬆️😘';
-  } else {
-    exciteMsg.textContent=msgs[v]||msgs[10];
-  }
-  exciteNum.textContent=v;
-  answers.excitement=v+'/10';
-});
-answers.excitement='10/10';
-
+/* ---------- finish → reservation ---------- */
 document.getElementById('finishBtn').addEventListener('click',()=>{
   buildRecap();
   show('s-done');
@@ -612,8 +600,7 @@ function buildRecap(){
     ['🎬 Movie',answers.movie],
     ['🍽️ Cuisine',answers.cuisine],
     ['🎧 Trip vibe',answers.vibe],
-    ['🍿 Snacks',answers.snacks],
-    ['😍 Excitement',answers.excitement]
+    ['🍿 Snacks',answers.snacks]
   ];
   r.innerHTML='<div class="line" style="font-weight:700;color:var(--ink)">Your picks, noted &amp; locked in:</div>';
   map.forEach(([k,v])=>{
@@ -665,7 +652,6 @@ document.getElementById('copyBtn').addEventListener('click',async()=>{
 🍽️ Cuisine: ${answers.cuisine||'—'}
 🎧 Trip vibe: ${answers.vibe||'—'}
 🍿 Snacks: ${answers.snacks||'—'}
-😍 Excitement: ${answers.excitement||'—'}
 (now tell me where we're going 😏)`;
   try{
     await navigator.clipboard.writeText(txt);
@@ -686,7 +672,6 @@ document.getElementById('copyBtn').addEventListener('click',async()=>{
       <img class="gif-slot" src="YOUR_GIF_URL_OR_FILE.gif" alt="yay" />
     (a hosted .gif URL, or put the file next to this html and use its name)
   • The "nah" button can never be clicked — it runs on hover, tap, and focus.
-  • The excitement slider refuses to go below 9. On purpose. 😌
   • To share: just send him this single .html file, or host it free on
     Netlify Drop / GitHub Pages / Vercel and send the link.
 ============================================================ -->
